@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import (QWidget, QApplication, QLabel,
                              QPushButton, QGridLayout, QComboBox,
-                             QCheckBox)
+                             QCheckBox, QFileDialog)
 import sys
-
+from invoice2data import main
 
 class Interface(QWidget):
 
@@ -13,8 +13,13 @@ class Interface(QWidget):
 
     def initUI(self):
 
+        self.args = ""
+
         file_label = QLabel('File')
         open_file_button = QPushButton('Select File', self)
+        self.file_selected = QLabel('')
+
+        open_file_button.clicked.connect(self.showFileDialog)
 
         input_reader_label = QLabel('Input Reader')
         # self.input_reader_selected = QLabel("pdftotext", self)
@@ -39,12 +44,20 @@ class Interface(QWidget):
         custom_template_checkbox = QCheckBox('Use custom template', self)
         exclude_template_checkbox = QCheckBox('Exclude inbuilt template', self)
         select_custom_template_button = QPushButton('Select custom template')
+        self.template_selected = QLabel('')
+
+        select_custom_template_button.clicked.connect(self.showTempalateDialog)
+
+        empty_row_label = QLabel('')
+
+        submit_button = QPushButton('Submit')
 
         grid = QGridLayout()
         grid.setSpacing(10)
 
         grid.addWidget(file_label, 1, 0)
         grid.addWidget(open_file_button, 1, 1)
+        grid.addWidget(self.file_selected, 1, 2)
 
         grid.addWidget(input_reader_label, 2, 0)
         # grid.addWidget(self.input_reader_selected, 2, 2)
@@ -62,6 +75,11 @@ class Interface(QWidget):
         grid.addWidget(select_custom_template_button, 5,2)
 
         grid.addWidget(exclude_template_checkbox, 6, 1)
+        grid.addWidget(self.template_selected, 6, 2)
+
+        grid.addWidget(empty_row_label, 7, 1)
+
+        grid.addWidget(submit_button, 8, 1)
 
         self.setLayout(grid)
 
@@ -74,7 +92,21 @@ class Interface(QWidget):
     # def onActivated(self, text):
     #     self.input_reader_selected.setText(text)
     #     self.input_reader_selected.adjustSize()
+    def showFileDialog(self):
 
+        fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', "pdf (*.pdf);; All Files (*)")
+        if fname[0]:
+            # print(str(fname[0][0]))
+            self.file_selected.setText(str(fname[0][0]))
+            # self.args = self.parser.parse_args(['--output-name', test_file, '--output-format', 'csv'] + self._get_test_file_path())
+
+    def showTempalateDialog(self):
+
+        custom_template_name = QFileDialog.getOpenFileName(self, 'Open file', '/home', "YAML (*.yml);; All Files (*)")
+        if custom_template_name[0]:
+            # print(str(fname[0][0]))
+            self.template_selected.setText(str(custom_template_name[0]))
+            # self.args = self.parser.parse_args(['--output-name', test_file, '--output-format', 'csv'] + self._get_test_file_path())
 
 if __name__ == '__main__':
 
