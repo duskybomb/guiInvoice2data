@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import (QWidget, QApplication, QLabel,
                              QPushButton, QGridLayout, QComboBox,
-                             QCheckBox, QFileDialog)
+                             QFileDialog, QCheckBox, QMessageBox)
 import sys
-from invoice2data import main
+from invoice2data.main import *
+
 
 class Interface(QWidget):
 
@@ -13,7 +14,11 @@ class Interface(QWidget):
 
     def initUI(self):
 
-        self.args = ""
+        # self.args_list = []
+        # self.args = ""
+        self.file_names = []
+        self.input_reader_list = []
+        self.output_format_list = []
 
         file_label = QLabel('File')
         open_file_button = QPushButton('Select File', self)
@@ -24,19 +29,28 @@ class Interface(QWidget):
         input_reader_label = QLabel('Input Reader')
         # self.input_reader_selected = QLabel("pdftotext", self)
 
-        combo = QComboBox(self)
-        combo.addItem("pdftotext")
-        combo.addItem("pdfminer")
-        combo.addItem("tesseract")
-        # combo.activated[str].connect(self.onActivated)
+        input_combo = QComboBox(self)
+        input_combo.addItem("pdftotext")
+        input_combo.addItem("pdfminer")
+        input_combo.addItem("tesseract")
+        input_combo.activated[str].connect(self.onActivated)
 
         output_format_label = QLabel('Output Format')
 
-        csv_checkbox = QCheckBox('csv', self)
-        csv_checkbox.toggle()
-        json_checkbox = QCheckBox('json', self)
-        xml_checkbox = QCheckBox('XML', self)
-        # cb.stateChanged.connect(self.changeTitle)
+        output_combo = QComboBox(self)
+        output_combo.addItem("none")
+        output_combo.addItem("csv")
+        output_combo.addItem("json")
+        output_combo.addItem("xml")
+        output_combo.activated[str].connect(self.outputFormat)
+
+        # csv_radio = QRadioButton('csv', self)
+        # json_radio = QRadioButton('json', self)
+        # xml_radio = QRadioButton('XML', self)
+
+        # csv_checkbox.stateChanged.connect(self.csvOutputFormat)
+        # json_checkbox.stateChanged.connect(self.jsonOutputFormat)
+        # xml_checkbox.stateChanged.connect(self.xmlOutputFormat)
 
         output_field_button = QPushButton('Select Output Fields')
 
@@ -51,6 +65,8 @@ class Interface(QWidget):
         empty_row_label = QLabel('')
 
         submit_button = QPushButton('Submit')
+        submit_button.clicked.connect(self.sendArg)
+        self.submit_clicked_confirmation = QLabel('')
 
         grid = QGridLayout()
         grid.setSpacing(10)
@@ -61,12 +77,10 @@ class Interface(QWidget):
 
         grid.addWidget(input_reader_label, 2, 0)
         # grid.addWidget(self.input_reader_selected, 2, 2)
-        grid.addWidget(combo, 2, 1)
+        grid.addWidget(input_combo, 2, 1)
 
         grid.addWidget(output_format_label, 3, 0)
-        grid.addWidget(csv_checkbox, 3, 1)
-        grid.addWidget(json_checkbox, 3, 2)
-        grid.addWidget(xml_checkbox, 3, 3)
+        grid.addWidget(output_combo, 3, 1)
 
         grid.addWidget(output_field_button, 4, 1)
 
@@ -89,16 +103,19 @@ class Interface(QWidget):
         self.setWindowTitle('Invoice2data')
         self.show()
 
-    # def onActivated(self, text):
-    #     self.input_reader_selected.setText(text)
-    #     self.input_reader_selected.adjustSize()
+    def onActivated(self, text):
+        self.input_reader_list = ['--input-reader', text]
+
     def showFileDialog(self):
 
         fname = QFileDialog.getOpenFileNames(self, 'Open file', '/home', "pdf (*.pdf);; All Files (*)")
         if fname[0]:
             # print(str(fname[0][0]))
             self.file_selected.setText(str(fname[0][0]))
-            # self.args = self.parser.parse_args(['--output-name', test_file, '--output-format', 'csv'] + self._get_test_file_path())
+            self.file_names = fname[0]
+
+    def outputFormat(self, text):
+        self.output_format_list = ['--output-format', text]
 
     def showTempalateDialog(self):
 
@@ -106,7 +123,17 @@ class Interface(QWidget):
         if custom_template_name[0]:
             # print(str(fname[0][0]))
             self.template_selected.setText(str(custom_template_name[0]))
-            # self.args = self.parser.parse_args(['--output-name', test_file, '--output-format', 'csv'] + self._get_test_file_path())
+
+    def sendArg(self):
+        if self.file_names:
+            parser = create_parser()
+            print(parser.parse_args(self.file_names + self.input_reader_list + self.output_format_list))
+            args = parser.parse_args(self.file_names + self.input_reader_list + self.output_format_list)
+            main(args)
+            QMessageBox.about(self, "Title", "Operation Executed")
+        else:
+            QMessageBox.about(self, "Title", "Error! Please specify the file")
+
 
 if __name__ == '__main__':
 
