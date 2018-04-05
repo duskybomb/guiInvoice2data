@@ -25,12 +25,12 @@ pip3 install invoice2data
 ```
 
 ## Current Status
-#### Things Working
+#### Features Working
  * Selecting Files
  * Selecting input reader
  * Selecting output file type
  
-#### Things coming soon
+#### Features coming soon
  * Selecting Custom templates
  * Selecting output Fields
  * Template creation
